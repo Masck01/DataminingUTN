@@ -1,8 +1,15 @@
 ---
 title: "DataminingPrimerParcial"
-author: "Quipildor-Cordoba"
 date: "3/10/2019"
-output: html_document
+output: 
+  html_notebook:
+    df_print: paged
+    fig:height: 4
+    fig:width: 6
+    theme: readable
+    toc: yes
+    toc_float: yes
+author: "Quipildor-Cordoba"
 ---
 
 ```{r setup, include=FALSE}
@@ -15,7 +22,15 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
+```{r include=FALSE}
+# Deshabilitamos la notación cientifica
+options(scipen = 999)
+# Agregamos las librerias
+library(mosaic)
+```
+
+
+```{r echo=TRUE}
 datos_en_bruto = read.csv("house_data.csv")
 knitr::kable(
   datos_en_bruto[1:10,1:5],
@@ -28,8 +43,13 @@ summary(datos_en_bruto)
 
 You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r pressure}
+# Histograma de precio
+histogram(datos_en_bruto$price, type = "count", labels = TRUE, main = "Histograma de price", xlab = "price", ylab = "frequency")
+
+# Densidad
+histogram(datos_en_bruto$price)
+ladd(panel.ashplot(datos_en_bruto$price))
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
