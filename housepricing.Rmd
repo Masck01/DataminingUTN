@@ -1,0 +1,398 @@
+---
+title: "HousePricing"
+author: "Gabriel Calderón, Nicolas Cianci"
+date: "1/10/2019"
+output: 
+  html_notebook:
+    df_print: paged
+    fig:height: 4
+    fig:width: 6
+    toc: yes
+    toc_float: yes
+---
+Secciones
+3 Preparando los datos
+  3.1 Revisión de Datos no nulos
+  3.2 Revisión de datos duplicados
+  3.3 Limpieza de datos
+4 Modelado
+  4.1 Analisis de Correlación
+  4.2 Creación del modelo de Regresión lineal Multiple
+  4.3 Validación del modelo
+5 Evaluación
+  5.1 Prueba de predicciones
+6 Overfitting
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1 Overview
+
+# 2 Entendiendo los datos
+
+## 2.1 Carga de Librerias
+
+```{r Carga de librerias}
+library(caret)
+library(markdown)
+library(knitr)
+library(fastDummies)
+#library(maps)
+library(ggplot2)
+library(corrplot)
+library(dplyr)
+library(psych)
+library(GGally)
+```
+
+
+## 2.2 Carga de Datos
+```{r Carga de Datos }
+HP <- read.csv("D:/Datamining/house_data.csv")
+HP
+attach(HP)
+describe(HP)
+```
+## 2.3 Análisis Exploratorio de Datos
+## 2.3.1 Resumen del Dataset
+```{r 2.3.1 Sumario del Dataset}
+summary(HP)
+```
+
+## Estructura del Dataset
+
+```{r Estructura del Dataset}
+str(HP)
+```
+
+
+## Diagramas de Dispersion de Price vs Todos
+
+```{r}
+ggplot(data = HP, aes(x = id, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'ID') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = date, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Fecha de venta') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = bedrooms, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Habitaciones') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = bathrooms, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Baños') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = sqft_living, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Dimensiones de la casa') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = sqft_lot, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Dimensiones del Lote') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = floors, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Pisos') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = waterfront, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Vista al agua') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = view, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Visitas a la casa') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = condition, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Condiciones de la casa(Particular)') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = grade, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Grado de la casa(Estado)') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = sqft_above, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Dimensiones base') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = sqft_basement, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Dimensiones de Sotano') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = yr_built, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Año de construcción') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = yr_renovated, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Año de renovación') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = sqft_living15, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Dimensiones en año 2015') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = sqft_lot15, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Dimensiones lote en 2015') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = zipcode, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Código postal') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = lat, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Latitud') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = HP, aes(x = long, y = price)) + 
+  geom_point(colour = "red4") +
+  ggtitle("Diagrama de dispersión") +
+  labs( y  =  'Precio', x = 'Longitud') +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  theme_gray() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+## Boxplots
+
+```{r}
+par(mfrow = c(1,2))
+boxplot(price, main = "Precio")
+boxplot(bedrooms, main = "Habitaciones")
+boxplot(bathrooms, main = "Baños")
+boxplot(sqft_living, main = "Dimensiones de la casa")
+boxplot(sqft_lot, main = "Dimensiones del lote")
+summary(raw_data[1:6])
+```
+```{r}
+par(mfrow = c(1,2))
+boxplot(floors, main = "Pisos")
+boxplot(waterfront, main = "Vista al agua")
+boxplot(view, main = "Vista")
+boxplot(condition, main = "Estado de la casa")
+boxplot(grade, main = "Grado")
+summary(raw_data[7:11])
+```
+
+```{r}
+par(mfrow = c(1,2))
+boxplot(sqft_above, main = "Dimensiones Base")
+boxplot(sqft_basement, main = "Dimensiones Sotano")
+boxplot(yr_built, main = "Año de construcción ")
+boxplot(yr_renovated, main = "Año de renovación")
+boxplot(sqft_living15, main = "Dimensiones sala de estar")
+boxplot(sqft_lot15, main = "Dimensiones lote 2015")
+summary(raw_data[12:17])
+```
+
+## Graficos de Distribución
+
+```{r}
+par(mfrow = c(1,2))
+pie(summary(as.factor(waterfront)), labels = c("No","Yes"), main = "Distribución de Casas con vista al agua")
+pie(table(as.factor(bathrooms)), main = "Distribución de baños")
+```
+
+
+```{r}
+par(mfrow = c(1,3))
+pie(table(as.factor(bedrooms)), main = "Distribución de Habitaciones")
+pie(table(as.factor(grade)),  main = "Distribución de Grado")
+pie(table(as.factor(condition)), main = "Distribución de condición de las casas")
+```
+
+
+
+
+```{r}
+par(mfrow = c(1,2))
+pie(table(as.factor(floors)), main = "Distribución de pisos")
+pie(table(as.factor(view)), main = "Distribución de visitas")
+```
+
+
+```{r}
+#summary(is.na(raw_data))
+#summary(raw_data$bedrooms)
+```
+```{r}
+#library(dplyr)
+raw_data$date = as.numeric(date)
+str(raw_data)
+raw_data2 = select(raw_data2, -id)
+#raw_data2 = filter(raw_data, yr_renovated != 0)
+#raw_data2$yr_renovated = as.factor(raw_data2$yr_renovated)
+str(raw_data2)
+#summary(raw_data2$yr_renovated)
+```
+
+```{r}
+correlation <- cor(raw_data2)
+correlation
+```
+
+
+```{r}
+corrplot(correlation, method = "square")
+```
+
+
+
+
+```{r}
+
+unique(raw_data$yr_renovated)
+summary(unique((raw_data$yr_renovated)))
+raw_data2$yr_renovated = as.factor(raw_data2$yr_renovated)
+
+```
+
+```{r}
+#options(digits=3)
+#EP <- table(raw_data$yr_renovated)
+#EP
+#EP <- prop.table(EP)*100
+#str(raw_data)
+```
+
+```{r}
+library(dplyr)
+raw_data2 <- filter(raw_data2, raw_data2$price < 1000000)
+raw_data3 <- filter(raw_data, raw_data$price < 1000000)
+raw_data4 <- filter(raw_data, raw_data$price >700000)
+boxplot(raw_data4$price)
+str(raw_data)
+hist(density = raw_data)
+hist(raw_data2$price)
+hist(raw_data3$price)
+boxplot(filter(raw_data, raw_data$price < 1000000)$price)
+#summary(raw_data$price)
+boxplot(raw_data$price)
+boxplot(raw_data2$price)
+#summary(raw_data2$price)
+#str(raw_data2)
+library(psych)
+describe(raw_data)
+```
+## Eliminación de Columnas no significativas
+
+```{r}
+raw_data$lat = NULL
+raw_data$id = NULL
+raw_data$long = NULL
+raw_data$zipcode = NULL
+```
