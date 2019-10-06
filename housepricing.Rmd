@@ -330,3 +330,38 @@ par(mfrow = c(1,2))
 pie(table(as.factor(floors)), main = "Distribución de pisos")
 pie(table(as.factor(view)), main = "Distribución de visitas")
 ```
+
+# 3 Preparando los datos
+
+## 3.1 Revisión de datos nulos
+
+```{r}
+CantidadNulos <- sapply(HP, function(x) sum(is.na(x)))
+data.frame(CantidadNulos)
+```
+
+```{r}
+HP3 <- HP
+HP3$date <- ymd_hms(HP3$date)
+str(HP3)
+```
+
+Analizando el diagrama de dispersion y la regresion lineal de date contra precio
+se llego a la conclusion que el atributo no nos sirve para el modelo.
+
+
+# 3.2 Revision de Datos Duplicados
+
+```{r}
+nrow(HP[duplicated(HP), ])
+nrow(duplicated(HP))
+```
+
+Tiene pinta que no hay.
+
+# 3.3 Limpieza de Datos
+
+```{r}
+
+```
+
