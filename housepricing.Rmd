@@ -2,13 +2,16 @@
 title: "HousePricing"
 author: "Gabriel Calderón, Nicolas Cianci"
 date: "1/10/2019"
-output: 
+output:
   html_notebook:
     df_print: paged
     fig:height: 4
     fig:width: 6
     toc: yes
     toc_float: yes
+  html_document:
+    df_print: paged
+    toc: yes
 ---
 Secciones
 3 Preparando los datos
@@ -43,12 +46,16 @@ library(corrplot)
 library(dplyr)
 library(psych)
 library(GGally)
+
+# Quitar la notacion cientifica
+options(scipen = 999)
+
 ```
 
 
 ## 2.2 Carga de Datos
 ```{r Carga de Datos }
-HP <- read.csv("D:/Datamining/house_data.csv")
+HP <- read.csv("house_data.csv")
 HP
 attach(HP)
 describe(HP)
@@ -276,7 +283,7 @@ boxplot(bedrooms, main = "Habitaciones")
 boxplot(bathrooms, main = "Baños")
 boxplot(sqft_living, main = "Dimensiones de la casa")
 boxplot(sqft_lot, main = "Dimensiones del lote")
-summary(raw_data[1:6])
+summary(HP[1:6])
 ```
 ```{r}
 par(mfrow = c(1,2))
@@ -285,7 +292,7 @@ boxplot(waterfront, main = "Vista al agua")
 boxplot(view, main = "Vista")
 boxplot(condition, main = "Estado de la casa")
 boxplot(grade, main = "Grado")
-summary(raw_data[7:11])
+summary(HP[7:11])
 ```
 
 ```{r}
@@ -296,7 +303,7 @@ boxplot(yr_built, main = "Año de construcción ")
 boxplot(yr_renovated, main = "Año de renovación")
 boxplot(sqft_living15, main = "Dimensiones sala de estar")
 boxplot(sqft_lot15, main = "Dimensiones lote 2015")
-summary(raw_data[12:17])
+summary(HP[12:17])
 ```
 
 ## Graficos de Distribución
@@ -322,77 +329,4 @@ pie(table(as.factor(condition)), main = "Distribución de condición de las casa
 par(mfrow = c(1,2))
 pie(table(as.factor(floors)), main = "Distribución de pisos")
 pie(table(as.factor(view)), main = "Distribución de visitas")
-```
-
-
-```{r}
-#summary(is.na(raw_data))
-#summary(raw_data$bedrooms)
-```
-```{r}
-#library(dplyr)
-raw_data$date = as.numeric(date)
-str(raw_data)
-raw_data2 = select(raw_data2, -id)
-#raw_data2 = filter(raw_data, yr_renovated != 0)
-#raw_data2$yr_renovated = as.factor(raw_data2$yr_renovated)
-str(raw_data2)
-#summary(raw_data2$yr_renovated)
-```
-
-```{r}
-correlation <- cor(raw_data2)
-correlation
-```
-
-
-```{r}
-corrplot(correlation, method = "square")
-```
-
-
-
-
-```{r}
-
-unique(raw_data$yr_renovated)
-summary(unique((raw_data$yr_renovated)))
-raw_data2$yr_renovated = as.factor(raw_data2$yr_renovated)
-
-```
-
-```{r}
-#options(digits=3)
-#EP <- table(raw_data$yr_renovated)
-#EP
-#EP <- prop.table(EP)*100
-#str(raw_data)
-```
-
-```{r}
-library(dplyr)
-raw_data2 <- filter(raw_data2, raw_data2$price < 1000000)
-raw_data3 <- filter(raw_data, raw_data$price < 1000000)
-raw_data4 <- filter(raw_data, raw_data$price >700000)
-boxplot(raw_data4$price)
-str(raw_data)
-hist(density = raw_data)
-hist(raw_data2$price)
-hist(raw_data3$price)
-boxplot(filter(raw_data, raw_data$price < 1000000)$price)
-#summary(raw_data$price)
-boxplot(raw_data$price)
-boxplot(raw_data2$price)
-#summary(raw_data2$price)
-#str(raw_data2)
-library(psych)
-describe(raw_data)
-```
-## Eliminación de Columnas no significativas
-
-```{r}
-raw_data$lat = NULL
-raw_data$id = NULL
-raw_data$long = NULL
-raw_data$zipcode = NULL
 ```
