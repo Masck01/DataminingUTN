@@ -341,9 +341,7 @@ data.frame(CantidadNulos)
 ```
 
 ```{r}
-HP3 <- HP
-HP3$date <- ymd_hms(HP3$date)
-str(HP3)
+
 ```
 
 Analizando el diagrama de dispersion y la regresion lineal de date contra precio
@@ -361,7 +359,84 @@ Tiene pinta que no hay.
 
 # 3.3 Limpieza de Datos
 
-```{r}
+```{r Cambiando el formato del atributo "Date"}
+HP2 <- HP
+HP2$date <- ymd_hms(HP2$date)
 
 ```
+
+```{r Cambiando el formato del atributo Waterfront}
+HP2$waterfront <- as.factor(HP2$waterfront)
+```
+
+```{r Redondeo de numero de baños y pisos}
+HP2$bathrooms <- floor(HP2$bathrooms)
+HP2$floors <- floor(HP2$floors)
+str(HP2)
+summary(HP2)
+```
+
+```{r}
+count(filter(HP, HP2$bedrooms > 10))
+HP2 <- filter(HP, HP2$bedrooms < 10)
+count(filter(HP2,HP2$sqft_basement >2000))
+HP2 <- filter(HP2,HP2$sqft_basement <2000)
+HP2 <- filter(HP2,HP2$bathrooms <6)
+
+
+```
+#Sacar Bedrooms
+#Sacar Condition
+#Sacar ID
+#Sacar Waterfront
+#Sacar Sqft_basement por colinealidad con sqft_living
+#Sacar zipcode
+#Sacar lat
+#Sacar long
+#Sacar Date
+#Sacar view
+#Sacar yr_renovation
+
+```{r}
+attach(HP2)
+HP2 <- select(HP2, -bedrooms)
+HP2 <- select(HP2, -id)
+HP2 <- select(HP2, -condition)
+HP2 <- select(HP2, -waterfront)
+HP2 <- select(HP2, -sqft_basement)
+HP2 <- select(HP2, -zipcode)
+HP2 <- select(HP2, -long)
+HP2 <- select(HP2, -date)
+HP2 <- select(HP2, -view)
+HP2 <- select(HP2, -yr_renovated)
+str(HP2)
+```
+
+```{r}
+#HP2 <- select(HP2, -lat)
+HP2$bathrooms <- floor(HP2$bathrooms)
+HP2$floors <- floor(HP2$floors)
+str(HP2)
+
+```
+
+# 4 Modelado
+
+## 4.1 Modelo de Regresion Lineal Multiple
+
+
+```{r}
+correlation <- cor(HP2)
+corrplot(correlation, method = "square")
+HP2 <-filter(HP2, HP2$price<1000000)
+lmm <- lm(HP2$price ~ ., HP2)
+summary(lmm)
+plot(lmm)
+```
+
+```{r}
+str(HP2)
+
+```
+
 
